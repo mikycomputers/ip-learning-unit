@@ -114,7 +114,7 @@
         }
         #worksheet-results .question-result {
             border-right: 4px solid;
-            transition: background-color 0.3s;
+            transition: background-color: 0.3s;
         }
          #worksheet-results .question-result:hover {
             background-color: #f9fafb;
@@ -285,60 +285,93 @@
         // --- Firebase & App State ---
         let db, auth, userId, userRole, roomId, studentName, quizFinalScore;
         let teacherStudentData = []; // To hold data for CSV export
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-ip-unit';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        
+        // --- !!! נדרש שינוי להרצה ב-GitHub Pages או סביבה חיצונית !!! ---
+        // 1. צור פרויקט חדש ב-Firebase Console (console.firebase.google.com).
+        // 2. בפרויקט, הוסף אפליקציית אינטרנט (Web App).
+        // 3. הפעל את שירות Firestore Database (ב-Test Mode).
+        // 4. העתק את אובייקט התצורה (firebaseConfig) שקיבלת והדבק אותו כאן במקום האובייקט לדוגמה.
+        const firebaseConfig = {
+           apiKey: "AIzaSyBw52T-wDS5YPlH4kkUNTIqzVRAtxeWHd8",
+           authDomain: "learning-unit-21661.firebaseapp.com",
+           projectId: "learning-unit-21661",
+           storageBucket: "learning-unit-21661.appspot.com",
+           messagingSenderId: "93147892442",
+           appId: "1:93147892442:web:d25ffd3830c8d68f54b3e3",
+           measurementId: "G-GV1M41HM5R"
+        };
+        const appId = 'ip-learning-unit-public'; // שם סטטי לאפליקציה
+        // --- סוף אזור השינוי ---
+
 
         async function initializeFirebase() {
             try {
+                // בדיקה אם המשתמש עדכן את פרטי התצורה
+                if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+                    document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-red-100 text-red-800 p-8 text-center">
+                        <div class="max-w-md">
+                            <h1 class="text-3xl font-bold">שגיאת תצורה</h1>
+                            <p class="mt-4 text-lg">נראה שלא עדכנת את פרטי ה-Firebase בקוד. פתח את קובץ ה-HTML, עבור לחלק ה-JavaScript (בסוף הקובץ) ופעל לפי ההוראות כדי להדביק את תצורת ה-Firebase האישית שלך.</p>
+                        </div>
+                    </div>`;
+                    return false; // עצירת הריצה
+                }
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                await signInAnonymously(auth);
                 userId = auth.currentUser.uid;
+                return true;
             } catch (error) {
                 console.error("Firebase initialization failed:", error);
-                document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-red-100 text-red-800 p-8 text-center">
+                 document.body.innerHTML = `<div class="flex items-center justify-center h-screen bg-red-100 text-red-800 p-8 text-center">
                         <div class="max-w-md">
                             <h1 class="text-3xl font-bold">שגיאת התחברות</h1>
-                            <p class="mt-4 text-lg">לא ניתן היה להתחבר לשירותי Firebase. ייתכן שהקובץ מורץ מקומית ללא תצורה מתאימה. אנא העלה את הקובץ לסביבת אירוח או פעל לפי ההוראות להגדרה מקומית.</p>
+                            <p class="mt-4 text-lg">לא ניתן היה להתחבר לשירותי Firebase. ודא שפרטי התצורה שהזנת נכונים וששירות Firestore מופעל בפרויקט שלך.</p>
                         </div>
                     </div>`;
+                return false;
             }
         }
         
-        await initializeFirebase();
-
         // --- Role Selection Logic ---
-        const welcomeScreen = document.getElementById('welcome-screen');
-        const mainContent = document.getElementById('main-content');
-        const studentView = document.getElementById('student-view');
-        const teacherView = document.getElementById('teacher-view');
+        // הקוד ימשיך לרוץ רק אם Firebase אותחל בהצלחה
+        (async () => {
+            const isFirebaseReady = await initializeFirebase();
+            if (!isFirebaseReady) return;
 
-        document.getElementById('teacher-btn').addEventListener('click', () => selectRole('teacher'));
-        document.getElementById('student-btn').addEventListener('click', () => selectRole('student'));
-        document.getElementById('join-room-btn').addEventListener('click', joinRoom);
-        document.getElementById('download-results-btn').addEventListener('click', downloadResultsAsCSV);
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const mainContent = document.getElementById('main-content');
+            const studentView = document.getElementById('student-view');
+            
+            document.getElementById('teacher-btn').addEventListener('click', () => selectRole('teacher'));
+            document.getElementById('student-btn').addEventListener('click', () => selectRole('student'));
+            document.getElementById('join-room-btn').addEventListener('click', joinRoom);
+            document.getElementById('download-results-btn').addEventListener('click', downloadResultsAsCSV);
+
+            // הפעלת שאר הלוגיקה של האפליקציה...
+            const allElements = document.querySelectorAll('button, input');
+            allElements.forEach(el => { if (el.id !== 'teacher-btn' && el.id !== 'student-btn') el.disabled = false; });
+            
+        })();
+
 
         function selectRole(role) {
             userRole = role;
-            welcomeScreen.style.display = 'none';
+            document.getElementById('welcome-screen').style.display = 'none';
 
             if (role === 'teacher') {
                 setupTeacherView();
             } else {
-                studentView.style.display = 'flex';
+                document.getElementById('student-view').style.display = 'flex';
             }
         }
 
         async function setupTeacherView() {
             roomId = generateRoomCode();
             document.getElementById('room-code-display').textContent = roomId;
-            mainContent.style.display = 'block';
-            teacherView.style.display = 'block';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('teacher-view').style.display = 'block';
 
             const roomRef = collection(db, 'artifacts', appId, 'public/data/ip_unit_rooms', roomId, 'students');
             
@@ -395,8 +428,8 @@
             if (docSnap.exists()) {
                 roomId = code;
                 studentName = name;
-                studentView.style.display = 'none';
-                mainContent.style.display = 'block';
+                document.getElementById('student-view').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
             } else {
                 errorEl.textContent = 'קוד הכיתה שהוזן אינו תקין.';
             }
@@ -404,7 +437,15 @@
         
         function downloadResultsAsCSV() {
             if (teacherStudentData.length === 0) {
-                alert("אין נתונים להורדה.");
+                // במקום alert, נציג הודעה למשתמש
+                const btn = document.getElementById('download-results-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'אין נתונים להורדה';
+                btn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                }, 2000);
                 return;
             }
 
@@ -804,4 +845,5 @@
 
 </body>
 </html>
+
 
