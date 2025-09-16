@@ -278,9 +278,9 @@
     </div>
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
         // --- Firebase & App State ---
         let db, auth, userId, userRole, roomId, studentName, quizFinalScore;
@@ -784,7 +784,7 @@
         }
 
         async function gradeWithAI(question, answer, guideline, retries = 3, delay = 1000) {
-             const apiKey = "";
+             const apiKey = "AIzaSyAy74yFwymnfH4lKprQCei4LWni8d8oJ94"; // <-- הדבק כאן את המפתח שיצרת ב-Google AI Studio
              const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
              const systemPrompt = `You are a helpful and encouraging computer networking teacher grading a student's worksheet in Hebrew. The student's answer might be in Hebrew. Your feedback must be in Hebrew. Be lenient with the grading. If the student demonstrates a good understanding and is mostly correct, even if not perfectly phrased, grade it as 100. Your entire response must be a valid JSON object with two keys: "score" (a number between 0 and 100) and "feedback" (a brief, encouraging string in Hebrew). Do not add any text before or after the JSON object.`;
              const userQuery = `Grade the following student answer. Question: "${question}" Student's Answer: "${answer}" For your reference, a good answer would be something like: "${guideline}" Evaluate the student's answer and provide a score and feedback in Hebrew.`;
@@ -845,5 +845,7 @@
 
 </body>
 </html>
+
+
 
 
